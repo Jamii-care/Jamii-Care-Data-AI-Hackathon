@@ -1,0 +1,3 @@
+# Virtual environment (if using venv)
+venv/
+.env
