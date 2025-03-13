@@ -74,7 +74,7 @@ const UserHome = () => {
       </div>
 
       {/* Call to action section */}
-      <div className="mt-6 flex flex-col md:flex-row gap-4 justify-center ">
+      <div className="mt-6 py-5 px-16 flex flex-col md:flex-row gap-4 justify-center ">
         <button className="px-6 py-3 bg-blue-600 text-white cursor-pointer rounded-lg shadow hover:bg-blue-700 duration-300 transition-all ease-in-out">
           Make a Payment
         </button>
