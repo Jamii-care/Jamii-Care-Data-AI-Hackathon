@@ -31,7 +31,7 @@ const Sidebar = () => {
         {/* NAV LINKS */}
         <nav className="space-y-4">
           <Link
-            to="/userdashboard/home"
+            to="/admindashboard/home"
             className={`flex items-center gap-2 py-2 px-4 rounded-md ${
               activeLink === 0 ? "bg-gray-700" : "hover:bg-gray-800"
             }`}
@@ -41,7 +41,7 @@ const Sidebar = () => {
           </Link>
 
           <Link
-            to="/userdashboard/transactions"
+            to="/admindashboard/transactions"
             className={`flex items-center gap-2 py-2 px-4 rounded-md ${
               activeLink === 1 ? "bg-gray-700" : "hover:bg-gray-800"
             }`}
@@ -51,7 +51,7 @@ const Sidebar = () => {
           </Link>
 
           <Link
-            to="/userdashboard/profile"
+            to="/admindashboard/profile"
             className={`flex items-center gap-2 py-2 px-4 rounded-md ${
               activeLink === 2 ? "bg-gray-700" : "hover:bg-gray-800"
             }`}

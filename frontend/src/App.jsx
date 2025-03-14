@@ -9,6 +9,9 @@ import AdminDashboard from './Pages/AdminDashboard'
 import UserHome from './Components/UserHome'
 import UserTransactions from './Components/UserTransactions'
 import UserProfile from './Components/UserProfile'
+import AdminHome from './Components/AdminHome'
+import AdminProfile from './Components/AdminProfile'
+import AdminTransaction from './Components/AdminTransaction'
  
 
 function App() {
@@ -26,7 +29,11 @@ function App() {
           <Route path='/userdashboard/transactions' element={ <UserTransactions/> } />
           <Route path='/userdashboard/profile' element={ <UserProfile/> } />
         </Route>
-        <Route path='/admindashboard' element={ <AdminDashboard/> } />
+        <Route path='/admindashboard' element={ <AdminDashboard/> } >
+          <Route path='/admindashboard/home' element={<AdminHome/>} />
+          <Route path='/admindashboard/profile' element={<AdminProfile/>} />
+          <Route path='/admindashboard/transactions' element={<AdminTransaction/>} />
+        </Route>
       </Routes>
 
     </Router>
