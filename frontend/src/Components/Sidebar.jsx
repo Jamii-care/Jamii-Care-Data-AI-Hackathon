@@ -13,10 +13,10 @@ const Sidebar = () => {
     <div className="relative">
       {/* MOBILE TOGGLE BUTTON */}
       <button
-        className="md:hidden fixed top-16 left-4 z-60 text-3xl text-white rounded-md"
+        className="md:hidden fixed top-16 left-4 z-60 text-3xl text-amber-500 rounded-md"
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
       >
-        {isSidebarOpen ? <MdClose className="left-10"/> : <MdOutlineSegment />}
+        {isSidebarOpen ? <MdClose className="left-10 hidden"/> : <MdOutlineSegment />}
       </button>
 
       {/* SIDEBAR */}
@@ -31,7 +31,7 @@ const Sidebar = () => {
         {/* NAV LINKS */}
         <nav className="space-y-4">
           <Link
-            to="/admindashboard/home"
+            to="/userdashboard/home"
             className={`flex items-center gap-2 py-2 px-4 rounded-md ${
               activeLink === 0 ? "bg-gray-700" : "hover:bg-gray-800"
             }`}
@@ -41,7 +41,7 @@ const Sidebar = () => {
           </Link>
 
           <Link
-            to="/admindashboard/transactions"
+            to="/userdashboard/transactions"
             className={`flex items-center gap-2 py-2 px-4 rounded-md ${
               activeLink === 1 ? "bg-gray-700" : "hover:bg-gray-800"
             }`}
@@ -51,7 +51,7 @@ const Sidebar = () => {
           </Link>
 
           <Link
-            to="/admindashboard/profile"
+            to="/userdashboard/profile"
             className={`flex items-center gap-2 py-2 px-4 rounded-md ${
               activeLink === 2 ? "bg-gray-700" : "hover:bg-gray-800"
             }`}
