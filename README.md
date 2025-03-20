@@ -89,7 +89,7 @@
      ```
    - Run the React app:
      ```bash
-     npm start
+     npm run dev
      ```
 
 4. **Set Up the Database:**
