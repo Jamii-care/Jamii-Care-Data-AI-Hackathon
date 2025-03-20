@@ -16,7 +16,7 @@ return (
             {/* Content area */}
             <div className="flex-grow bg-primarywhite relative">
                 <img src={BGImage} alt="background image" className="absolute inset-0 object-cover w-full h-full z-0 blur-[2px]"/>
-                <div className="relative z-10 bg-black/40">
+                <div className="relative z-10 bg-black/45 h-[90vh]">
                     <Outlet/>
                 </div>
             </div>
