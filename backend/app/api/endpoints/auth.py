@@ -1,6 +1,6 @@
 from datetime import timedelta
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -15,7 +15,7 @@ from ...services import auth_service
 router = APIRouter()
 
 @router.post("/login", response_model=Token)
-async def login(
+async def login_access_token(
     db: AsyncSession = Depends(get_db),
     form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
@@ -37,21 +37,29 @@ async def login(
             detail="Inactive user"
         )
     
-    access_token = auth_service.create_access_token(user)
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
-        "access_token": access_token,
+        "access_token": security.create_access_token(
+            data={"sub": str(user.id)}, expires_delta=access_token_expires
+        ),
         "token_type": "bearer"
     }
 
 @router.post("/signup", response_model=UserSchema)
-async def create_user(
+async def create_user_signup(
     *,
     db: AsyncSession = Depends(get_db),
     user_in: UserCreate,
 ) -> Any:
     """
-    Create new user.
+    Create new user without the need to be logged in.
     """
+    user = await auth_service.get_user_by_email(db, email=user_in.email)
+    if user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The user with this email already exists in the system",
+        )
     user = await auth_service.create_user(db, user_in=user_in)
     return user
 
@@ -77,14 +85,14 @@ async def recover_password(email: str, db: AsyncSession = Depends(get_db)) -> An
     # For now, we'll just return a success message
     return {"msg": "Password recovery email sent"}
 
-@router.post("/reset-password/")
+@router.post("/reset-password")
 async def reset_password(
     token: str,
     new_password: str,
     db: AsyncSession = Depends(get_db),
 ) -> Any:
     """
-    Reset password
+    Reset password using token received in email
     """
     payload = security.verify_token(token)
     if not payload:
