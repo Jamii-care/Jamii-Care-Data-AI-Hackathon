@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { GiCheckMark } from "react-icons/gi";
 import { IoEye, IoEyeOff } from "react-icons/io5";
+import axios from "axios";
+
+const SECRET_KEY = "JAMII-ADMIN-SECRET"; // Temporary secret key for admin registration
 
 const SignUp = () => {
   const [role, setRole] = useState("user");
@@ -9,40 +12,53 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [adminSecret, setAdminSecret] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleRoleChange = (event) => {
-    setRole(event.target.value);
-  };
-
-  const toggleShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const toggleShowConfirmPassword = () => {
-    setShowConfirmPassword(!showConfirmPassword);
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+    
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      setError("Passwords do not match!");
       return;
     }
     if (!termsAccepted) {
-      alert("You must accept the terms and conditions to proceed.");
+      setError("You must accept the terms and conditions to proceed.");
       return;
     }
-    alert("Registration successful!");
+    if (role === "admin" && adminSecret !== SECRET_KEY) {
+      setError("Invalid admin secret key!");
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      const response = await axios.post("http://localhost:8000/api/auth/signup", {
+        email,
+        password,
+        full_name: fullName,
+        role,
+      });
+      alert("Registration successful!");
+      window.location.href = "/login";
+      console.log(response.data);
+    } catch (err) {
+      setError(err.response?.data?.detail || "Signup failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="bg-primarygray min-h-screen flex items-center justify-center p-4">
       <div className="bg-primarywhite w-full max-w-4xl flex flex-col md:flex-row rounded shadow-lg overflow-hidden">
         <div className="border-b md:border-r border-gray-400 w-full md:w-3/5 p-6 md:p-10">
-          <div className="text-center text-lg pb-4">
-            <h1 className="font-bold text-xl">Hello!</h1>
-            <p className="font-thin">Sign up below.</p>
-          </div>
+          <h1 className="text-xl font-bold text-center pb-4">Hello! Sign up below.</h1>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {/* Role Selection */}
@@ -52,7 +68,7 @@ const SignUp = () => {
                   type="radio"
                   value="user"
                   checked={role === "user"}
-                  onChange={handleRoleChange}
+                  onChange={() => setRole("user")}
                 />
                 User
               </label>
@@ -61,144 +77,89 @@ const SignUp = () => {
                   type="radio"
                   value="admin"
                   checked={role === "admin"}
-                  onChange={handleRoleChange}
+                  onChange={() => setRole("admin")}
                 />
                 Admin
               </label>
             </div>
 
-            {/* Displaying the secret key input if admin is true */}
             {role === "admin" && (
               <div className="flex flex-col gap-1">
-                <label className="font-semibold">Secret Key</label>
+                <label className="font-semibold">Admin Secret Key</label>
                 <input
                   type="text"
                   placeholder="Enter the Admin Secret Key"
-                  className="p-2 w-full border border-gray-500 rounded shadow-md focus:shadow-lg focus:border-gray-600"
+                  className="p-2 border border-gray-500 rounded"
+                  value={adminSecret}
+                  onChange={(e) => setAdminSecret(e.target.value)}
                   required
                 />
               </div>
             )}
 
-            <div className="flex flex-col gap-1">
-              <label className="font-semibold">Username</label>
-              <input
-                type="text"
-                placeholder="Enter Your Username"
-                className="p-2 w-full border border-gray-500 rounded shadow-md focus:shadow-lg focus:border-gray-600"
-                required
-              />
-            </div>
+            <input
+              type="text"
+              placeholder="Full Name"
+              className="p-2 border border-gray-500 rounded"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+            />
 
-            <div className="flex flex-col gap-1">
-              <label className="font-semibold">Email</label>
-              <input
-                type="email"
-                placeholder="Enter Your Email"
-                className="p-2 w-full border border-gray-500 rounded shadow-md focus:shadow-lg focus:border-gray-600"
-                required
-              />
-            </div>
+            <input
+              type="email"
+              placeholder="Email"
+              className="p-2 border border-gray-500 rounded"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
 
-            {/* Password Input with Toggle / show password icon */}
-            <div className="flex flex-col gap-1 relative">
-              <label className="font-semibold">Password</label>
+            <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder="Enter Your Password"
-                className="p-2 w-full border border-gray-500 rounded shadow-md focus:shadow-lg focus:border-gray-600"
+                placeholder="Password"
+                className="p-2 border border-gray-500 rounded w-full"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-              <button
-                type="button"
-                className="absolute right-4 top-10"
-                onClick={toggleShowPassword}
-              >
+              <button type="button" className="absolute right-4 top-2" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <IoEyeOff /> : <IoEye />}
               </button>
             </div>
 
-            {/* Confirm Password Input with Toggle / show password icon */}
-            <div className="flex flex-col gap-1 relative">
-              <label className="font-semibold">Confirm Password</label>
+            <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm Your Password"
-                className="p-2 w-full border border-gray-500 rounded shadow-md focus:shadow-lg focus:border-gray-600"
+                placeholder="Confirm Password"
+                className="p-2 border border-gray-500 rounded w-full"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
-              <button
-                type="button"
-                className="absolute right-4 top-10"
-                onClick={toggleShowConfirmPassword}
-              >
+              <button type="button" className="absolute right-4 top-2" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                 {showConfirmPassword ? <IoEyeOff /> : <IoEye />}
               </button>
             </div>
 
-            {/* Terms and Conditions Checkbox */}
             <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="terms"
-                checked={termsAccepted}
-                onChange={(e) => setTermsAccepted(e.target.checked)}
-              />
+              <input type="checkbox" id="terms" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} />
               <label htmlFor="terms" className="text-sm">
-                I have read and agree to the{" "}
-                <a href="#" className="text-blue-600 hover:underline">
-                  Terms and Conditions
-                </a>
+                I accept the <a href="#" className="text-blue-600">Terms & Conditions</a>
               </label>
             </div>
 
+            {error && <p className="text-red-600 text-center">{error}</p>}
+
             <button
               type="submit"
-              className="bg-blue-700 hover:bg-blue-900 shadow-xl font-bold py-2 rounded-full w-full md:w-2/3 mx-auto cursor-pointer duration-300 ease-in-out"
+              className="bg-blue-700 text-white py-2 rounded-full w-full md:w-2/3 mx-auto cursor-pointer hover:bg-green-600 duration-300 ease-in-out"
+              disabled={loading}
             >
-              Register
+              {loading ? "Registering..." : "Register"}
             </button>
-            <p className="md:pt-10 text-black text-center md:hidden">
-              <a href="/login">
-                Already have an account?{" "}
-                <span className="text-yellow-800 font-semibold">Sign in.</span>
-              </a>
-            </p>
           </form>
-        </div>
-
-        {/* Right section - Signup Info */}
-        <div className="bg-secondaryblue w-full md:w-2/5 p-6 md:flex md:flex-col items-center justify-center text-center text-white hidden">
-          <h2 className="text-lg font-bold">Join Jamii Care Today!</h2>
-          <p className="text-center mt-4 px-6 font-semibold">
-            Secure. Transparent. Smart. Become part of a community that takes
-            control of its welfare finances effortlessly!
-          </p>
-          <ul className="mt-4 text-sm space-y-2 flex flex-col">
-            <li className="flex flex-row items-center gap-1">
-              <GiCheckMark /> Seamless Contributions & Withdrawals
-            </li>
-            <li className="flex flex-row items-center gap-1">
-              <GiCheckMark /> AI-Powered Fraud Detection
-            </li>
-            <li className="flex flex-row items-center gap-1">
-              <GiCheckMark /> Real-time Financial Insights
-            </li>
-            <li className="flex flex-row items-center gap-1">
-              <GiCheckMark /> Budget Planning & Forecasting
-            </li>
-          </ul>
-
-          <p className="pt-10 text-white">
-            <a href="/login">
-              Already have an account?{" "}
-              <span className="text-yellow-400 font-semibold">Sign in.</span>
-            </a>
-          </p>
         </div>
       </div>
     </div>
