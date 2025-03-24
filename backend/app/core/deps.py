@@ -4,69 +4,55 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
-from . import security
-from .config import settings
-from ..db.database import AsyncSessionLocal
-from ..models.user import User
-from ..schemas.user import UserInDB
+from app import crud, models
+from app.schemas.user import TokenPayload
+from app.core import security
+from app.core.config import settings
+from app.db.database import AsyncSessionLocal
 
 reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=f"/api/auth/login"
+    tokenUrl=f"{settings.API_V1_STR}/auth/login"
 )
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-        finally:
-            await session.close()
+    try:
+        db = AsyncSessionLocal()
+        yield db
+    finally:
+        await db.close()
 
 async def get_current_user(
     db: AsyncSession = Depends(get_db),
     token: str = Depends(reusable_oauth2)
-) -> User:
+) -> models.User:
     try:
-        payload = security.verify_token(token)
-        if payload is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not validate credentials",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        user_id: Optional[int] = payload.get("sub")
-        if user_id is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Could not validate credentials",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+        payload = jwt.decode(
+            token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+        )
+        token_data = TokenPayload(**payload)
     except (jwt.JWTError, ValidationError):
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
         )
-        
-    query = select(User).filter(User.id == user_id)
-    result = await db.execute(query)
-    user = result.scalar_one_or_none()
-    
+    user = await crud.user.get(db, id=int(token_data.sub))
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise HTTPException(status_code=404, detail="User not found")
     return user
 
-async def get_current_active_user(
-    current_user: User = Depends(get_current_user),
-) -> User:
-    if not current_user.is_active:
+def get_current_active_user(
+    current_user: models.User = Depends(get_current_user),
+) -> models.User:
+    if not crud.user.is_active(current_user):
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
+
+def get_current_active_superuser(
+    current_user: models.User = Depends(get_current_user),
+) -> models.User:
+    if not crud.user.is_superuser(current_user):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Inactive user"
+            status_code=400, detail="The user doesn't have enough privileges"
         )
     return current_user 
