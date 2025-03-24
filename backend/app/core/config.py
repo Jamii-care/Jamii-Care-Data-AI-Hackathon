@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = [
         "http://localhost:3000",  # React default port
         "http://localhost:8000",  # FastAPI default port
+        "http://127.0.0.1:5173",
     ]
 
     @field_validator("BACKEND_CORS_ORIGINS", mode="before")
