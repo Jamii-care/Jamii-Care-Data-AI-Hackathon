@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { GiCheckMark } from "react-icons/gi";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const SECRET_KEY = "JAMII-ADMIN-SECRET"; // Temporary secret key for admin registration
 
 const SignUp = () => {
+  const navigate = useNavigate();
   const [role, setRole] = useState("user");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -38,17 +40,30 @@ const SignUp = () => {
     setLoading(true);
     
     try {
-      const response = await axios.post("http://localhost:8000/api/auth/signup", {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/signup`, {
         email,
         password,
         full_name: fullName,
         role,
       });
-      alert("Registration successful!");
-      window.location.href = "/login";
-      console.log(response.data);
+
+      // Store user data in localStorage (if needed)
+      const userData = response.data;
+      localStorage.setItem('userEmail', userData.email);
+      localStorage.setItem('userRole', userData.role);
+      
+      // Show success message and redirect
+      alert("Registration successful! Please login to continue.");
+      navigate("/login");
     } catch (err) {
-      setError(err.response?.data?.detail || "Signup failed");
+      if (err.response?.data?.detail) {
+        setError(err.response.data.detail);
+      } else if (err.message === "Network Error") {
+        setError("Unable to connect to the server. Please check your internet connection.");
+      } else {
+        setError("An unexpected error occurred. Please try again later.");
+      }
+      console.error("Signup error:", err);
     } finally {
       setLoading(false);
     }
