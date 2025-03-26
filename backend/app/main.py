@@ -6,16 +6,14 @@ from fastapi.exceptions import RequestValidationError
 from .api.api import api_router
 from .core.config import settings
 
-app = FastAPI(
-    title=settings.PROJECT_NAME,
-    description="AI-Powered Welfare Management System API",
-    version="1.0.0"
-)
+app = FastAPI()
+
+origins = settings.BACKEND_CORS_ORIGINS
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

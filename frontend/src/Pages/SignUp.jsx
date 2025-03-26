@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { GiCheckMark } from "react-icons/gi";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import axios from "axios";
@@ -20,25 +20,50 @@ const SignUp = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Refs for focusing inputs
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+  const confirmPasswordRef = useRef(null);
+
+  useEffect(() => {
+    console.log("API URL:", import.meta.env.VITE_API_URL);
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    
-    if (password !== confirmPassword) {
-      setError("Passwords do not match!");
+
+    // Validation checks with auto-focus
+    if (!email) {
+      setError("Email is required!");
+      emailRef.current?.focus();
       return;
     }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters!");
+      passwordRef.current?.focus();
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match!");
+      confirmPasswordRef.current?.focus();
+      return;
+    }
+
     if (!termsAccepted) {
       setError("You must accept the terms and conditions to proceed.");
       return;
     }
+
     if (role === "admin" && adminSecret !== SECRET_KEY) {
       setError("Invalid admin secret key!");
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/signup`, {
         email,
@@ -47,12 +72,12 @@ const SignUp = () => {
         role,
       });
 
-      // Store user data in localStorage (if needed)
+      // Store user data in localStorage
       const userData = response.data;
-      localStorage.setItem('userEmail', userData.email);
-      localStorage.setItem('userRole', userData.role);
-      
-      // Show success message and redirect
+      localStorage.setItem("userEmail", userData.email);
+      localStorage.setItem("userRole", userData.role);
+
+      // Success message and redirect
       alert("Registration successful! Please login to continue.");
       navigate("/login");
     } catch (err) {
@@ -127,6 +152,7 @@ const SignUp = () => {
               className="p-2 border border-gray-500 rounded"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              ref={emailRef}
               required
             />
 
@@ -137,6 +163,7 @@ const SignUp = () => {
                 className="p-2 border border-gray-500 rounded w-full"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                ref={passwordRef}
                 required
               />
               <button type="button" className="absolute right-4 top-2" onClick={() => setShowPassword(!showPassword)}>
@@ -151,6 +178,7 @@ const SignUp = () => {
                 className="p-2 border border-gray-500 rounded w-full"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                ref={confirmPasswordRef}
                 required
               />
               <button type="button" className="absolute right-4 top-2" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
@@ -159,7 +187,12 @@ const SignUp = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <input type="checkbox" id="terms" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} />
+              <input
+                type="checkbox"
+                id="terms"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+              />
               <label htmlFor="terms" className="text-sm">
                 I accept the <a href="#" className="text-blue-600">Terms & Conditions</a>
               </label>
