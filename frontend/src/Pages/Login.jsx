@@ -18,10 +18,17 @@ const Login = () => {
     setError("");
 
     try {
-      const response = await axios.post("http://localhost:8000/login", {
-        email,
-        password,
-      });
+      const formData = new URLSearchParams();
+      formData.append("username", email); 
+      formData.append("password", password);
+
+      const response = await axios.post(
+        "http://localhost:8000/api/auth/login",
+        formData,
+        {
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        }
+      );
 
       if (response.data.success) {
         const { token, role } = response.data;
@@ -141,10 +148,17 @@ const Login = () => {
 
         {/* Right Section - Login Info */}
         <div className="bg-secondarygray w-full md:w-2/5 md:flex md:flex-col items-center justify-center text-center text-white p-6 md:p-10 hidden relative">
-          <img src={BGRight} alt="Login Background" className="absolute inset-0 w-full h-full object-cover opacity-30" />
-          <h2 className="text-lg md:text-xl font-bold relative">Welcome Back!</h2>
+          <img
+            src={BGRight}
+            alt="Login Background"
+            className="absolute inset-0 w-full h-full object-cover opacity-30"
+          />
+          <h2 className="text-lg md:text-xl font-bold relative">
+            Welcome Back!
+          </h2>
           <p className="mt-4 px-4 text-sm md:text-base font-semibold relative">
-            Manage your welfare activities with ease. Stay ahead with real-time insights and secure transactions.
+            Manage your welfare activities with ease. Stay ahead with real-time
+            insights and secure transactions.
           </p>
           <p className="text-white/90 italic text-xs md:text-sm relative">
             "Take control of your welfare finances effortlessly!"
@@ -162,7 +176,8 @@ const Login = () => {
           </ul>
           <p className="pt-6 relative">
             <a href="/signup" className="text-white hover:font-semibold">
-              Don't have an account? <span className="text-yellow-400">Sign Up.</span>
+              Don't have an account?{" "}
+              <span className="text-yellow-400">Sign Up.</span>
             </a>
           </p>
         </div>
