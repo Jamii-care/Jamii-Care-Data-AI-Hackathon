@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import Navbar from './Components/Navbar'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { ToastContainer } from 'react-toastify'
 import Home from './Pages/Home'
 import Login from './Pages/Login'
 import SignUp from './Pages/SignUp'
@@ -37,6 +38,7 @@ function App() {
       </Routes>
 
     </Router>
+    <ToastContainer/>
     </>
   )
 }

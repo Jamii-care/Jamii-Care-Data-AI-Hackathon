@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { GiCheckMark } from "react-icons/gi";
 import { IoEye, IoEyeOff } from "react-icons/io5";
+import { TiTick } from "react-icons/ti";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import RightBg from "../assets/shvetsa.jpg";
 
 const SECRET_KEY = "JAMII-ADMIN-SECRET"; // Temporary secret key for admin registration
 
@@ -65,12 +68,15 @@ const SignUp = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/signup`, {
-        email,
-        password,
-        full_name: fullName,
-        role,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/auth/signup`,
+        {
+          email,
+          password,
+          full_name: fullName,
+          role,
+        }
+      );
 
       // Store user data in localStorage
       const userData = response.data;
@@ -78,13 +84,26 @@ const SignUp = () => {
       localStorage.setItem("userRole", userData.role);
 
       // Success message and redirect
-      alert("Registration successful! Please login to continue.");
-      navigate("/login");
+      // alert("Registration successful! Please login to continue.");
+      toast.success("USER REGISTERED SUCCESSFULLY", {
+        position: "top-right",
+        autoClose: 5000,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      // Delay navigation slightly to ensure the toast is visible
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000); // 3-second delay before redirecting to login
     } catch (err) {
       if (err.response?.data?.detail) {
         setError(err.response.data.detail);
       } else if (err.message === "Network Error") {
-        setError("Unable to connect to the server. Please check your internet connection.");
+        setError(
+          "Unable to connect to the server. Please check your internet connection."
+        );
       } else {
         setError("An unexpected error occurred. Please try again later.");
       }
@@ -98,7 +117,9 @@ const SignUp = () => {
     <div className="bg-primarygray min-h-screen flex items-center justify-center p-4">
       <div className="bg-primarywhite w-full max-w-4xl flex flex-col md:flex-row rounded shadow-lg overflow-hidden">
         <div className="border-b md:border-r border-gray-400 w-full md:w-3/5 p-6 md:p-10">
-          <h1 className="text-xl font-bold text-center pb-4">Hello! Sign up below.</h1>
+          <h1 className="text-xl font-bold text-center pb-4">
+            Hello! Sign up below.
+          </h1>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {/* Role Selection */}
@@ -166,7 +187,11 @@ const SignUp = () => {
                 ref={passwordRef}
                 required
               />
-              <button type="button" className="absolute right-4 top-2" onClick={() => setShowPassword(!showPassword)}>
+              <button
+                type="button"
+                className="absolute right-4 top-2"
+                onClick={() => setShowPassword(!showPassword)}
+              >
                 {showPassword ? <IoEyeOff /> : <IoEye />}
               </button>
             </div>
@@ -181,7 +206,11 @@ const SignUp = () => {
                 ref={confirmPasswordRef}
                 required
               />
-              <button type="button" className="absolute right-4 top-2" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+              <button
+                type="button"
+                className="absolute right-4 top-2"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
                 {showConfirmPassword ? <IoEyeOff /> : <IoEye />}
               </button>
             </div>
@@ -194,7 +223,10 @@ const SignUp = () => {
                 onChange={(e) => setTermsAccepted(e.target.checked)}
               />
               <label htmlFor="terms" className="text-sm">
-                I accept the <a href="#" className="text-blue-600">Terms & Conditions</a>
+                I accept the{" "}
+                <a href="#" className="text-blue-600">
+                  Terms & Conditions
+                </a>
               </label>
             </div>
 
@@ -202,12 +234,50 @@ const SignUp = () => {
 
             <button
               type="submit"
-              className="bg-blue-700 text-white py-2 rounded-full w-full md:w-2/3 mx-auto cursor-pointer hover:bg-green-600 duration-300 ease-in-out"
+              className="bg-green-600 text-white mt-10 py-2 rounded-full w-full md:w-2/3 mx-auto cursor-pointer hover:bg-blue-700 duration-300 ease-in-out"
               disabled={loading}
             >
               {loading ? "Registering..." : "Register"}
             </button>
+            <p className="md:pt-6 md:hidden text-center">
+              <a href="/signup" className="text-black">
+                Already have an account?
+                <span className="text-yellow-800 font-semibold"> Sign in.</span>
+              </a>
+            </p>
           </form>
+        </div>
+
+        {/* Right side on larger screens */}
+        <div className="hidden md:flex relative w-2/5">
+          {/* Background Image */}
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${RightBg})` }}
+          />
+
+          {/* Black Overlay */}
+          <div className="absolute inset-0 bg-black opacity-70"></div>
+
+          {/* Content */}
+          <div className="relative flex flex-col items-center justify-center text-white p-10">
+            <h2 className="text-2xl font-bold mb-4">Join Jamii Care Today!</h2>
+            <p className="text-center">
+              Empowering communities through transparency and efficient welfare
+              management.
+            </p>
+            <ul className="mt-4 space-y-2 text-sm">
+              <li className="flex flex-row items-center"> <TiTick className="size-6 text-green-600"/> Secure & Transparent Transactions</li>
+              <li className="flex flex-row items-center"> <TiTick className="size-6 text-green-600"></TiTick>AI-Powered Fraud Detection</li>
+              <li className="flex flex-row items-center"> <TiTick className="size-6 text-green-600"></TiTick> Smart Budgeting & Planning</li>
+            </ul>
+            <p className="pt-20">
+            <a href="/login" className="text-white hover:font-semibold">
+              Already have an account?{" "}
+              <span className="text-yellow-400">Sign in.</span>
+            </a>
+          </p>
+          </div>
         </div>
       </div>
     </div>
